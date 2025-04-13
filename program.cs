@@ -5,7 +5,7 @@ using System.Management;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
-namespace X7K9P2M
+namespace Triage
 {
     /// <summary>
     /// Main program for detecting virtual machine (VM) environments using hardware and wallpaper checks.
