@@ -1,0 +1,11 @@
+[package]
+name = "triageskipper-rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64 = "0.22"
+serde = { version = "1", features = ["derive"] }
+wmi = "0.13"
+winreg = "0.52"
+windows = { version = "0.58", features = ["Win32_UI_WindowsAndMessaging"] }
