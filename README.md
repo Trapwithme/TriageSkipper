@@ -1,19 +1,63 @@
 # TriageSkipper
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/Trapwithme/TriageSkipper)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![C#](https://img.shields.io/badge/language-C%23-blue.svg)](https://docs.microsoft.com/dotnet/csharp/)
+TriageSkipper is a Windows-focused virtual machine detection project that now includes four implementations of the same detection strategy:
 
-A lightweight C# console application designed to detect virtual machine (VM) environments on Windows. It performs hardware checks (keyboard, mouse, monitor, CPU) and wallpaper analysis, displaying a warning and exiting if a VM is detected. Built with Visual Studio, it’s ideal for developers exploring system environment validation.
+- C# (`program.cs`)
+- PowerShell (`triageskipper.ps1`)
+- Rust (`ports/rust`)
+- Go (`ports/go`)
+- C++ (`ports/cpp`)
 
-## Table of Contents
-- [Features](#features)
+## Detection Method (shared across ports)
 
-## Features
-- **Hardware Detection**: Queries WMI for keyboard, mouse, input devices, monitor, and CPU properties to identify VM-specific signatures.
-- **Wallpaper Validation**: Analyzes the desktop wallpaper’s Base64-encoded prefix for VM indicators.
-- **User Feedback**: Shows a "Virtual Machine Detected" message box and exits if a VM is found.
-- **Robust Error Handling**: Handles null values and WMI failures silently to prevent crashes.
-- **Cross-Platform Compatibility**: Supports .NET Core 6.0 and .NET Framework 4.8.
-- **Single-File Design**: All logic in `Program.cs` for simplicity and easy modification.
+Each version keeps the same core behavior:
 
+1. Query hardware via WMI and score matches for VM-like signatures.
+2. Check keyboard, mouse, input device, monitor, and CPU strings.
+3. Read the current wallpaper path from registry.
+4. Read wallpaper bytes, Base64-encode them, and compare the first 64 chars to a fixed signature.
+5. Show **"Virtual Machine Detected"** and exit with status code `1` if either hardware triage or wallpaper triage is positive.
+
+## Repository Layout
+
+- `program.cs` — original C# implementation.
+- `triageskipper.ps1` — PowerShell port.
+- `ports/rust/Cargo.toml` + `ports/rust/src/main.rs` — Rust port.
+- `ports/go/go.mod` + `ports/go/main.go` — Go port.
+- `ports/cpp/main.cpp` — C++ port.
+
+## Run / Build
+
+> All ports target Windows because they rely on WMI, Windows registry, and Win32 UI APIs.
+
+### C#
+Use your existing Visual Studio / .NET setup for `program.cs`.
+
+### PowerShell
+```powershell
+powershell -ExecutionPolicy Bypass -File .\triageskipper.ps1
+```
+
+### Rust
+```powershell
+cd ports\rust
+cargo run --release
+```
+
+### Go
+```powershell
+cd ports\go
+go run .
+```
+
+### C++ (MSVC Developer Command Prompt)
+```bat
+cd ports\cpp
+cl /EHsc main.cpp /link wbemuuid.lib
+main.exe
+```
+
+## Notes
+
+- The implementations intentionally preserve silent error handling in detection helpers to match the original behavior.
+- Threshold and signatures are kept equivalent to the original logic so outcomes stay consistent across languages.
