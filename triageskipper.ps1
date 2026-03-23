@@ -13,24 +13,44 @@ $KeyboardID = 'ACPI\PNP0303\4&22F5829E&0'
 $KeyboardName = 'Standard PS/2 Keyboard'
 
 $CPU = 'Intel Core Processor (Broadwell)'
+$WallpaperSignature = '/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAwMDAwMDA0ODg0SExETEhsYFhYYGygd'
+
+function Contains-IgnoreCase {
+    param(
+        [string]$Value,
+        [string]$Needle
+    )
+
+    return -not [string]::IsNullOrEmpty($Value) -and $Value.IndexOf($Needle, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+}
+
+function Invoke-WmiQuery {
+    param([string]$Query)
+
+    try {
+        $searcher = New-Object System.Management.ManagementObjectSearcher($Query)
+        return $searcher.Get()
+    }
+    catch {
+        # Silent error handling
+        return @()
+    }
+}
 
 function Check-Keyboard {
     $index = 0
-    try {
-        $searcher = New-Object System.Management.ManagementObjectSearcher('SELECT Description, DeviceID FROM Win32_Keyboard')
-        foreach ($obj in $searcher.Get()) {
-            $description = [string]($obj['Description'])
-            $deviceId = [string]($obj['DeviceID'])
 
-            if (![string]::IsNullOrEmpty($deviceId) -and $deviceId.IndexOf($KeyboardID, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+    foreach ($obj in (Invoke-WmiQuery 'SELECT Description, DeviceID FROM Win32_Keyboard')) {
+        $description = [string]($obj['Description'])
+        $deviceId = [string]($obj['DeviceID'])
+
+        if (Contains-IgnoreCase -Value $deviceId -Needle $KeyboardID) {
+            $index++
+
+            if (Contains-IgnoreCase -Value $description -Needle $KeyboardName) {
                 $index++
-                if (![string]::IsNullOrEmpty($description) -and $description.IndexOf($KeyboardName, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                    $index++
-                }
             }
         }
-    } catch {
-        # Silent error handling
     }
 
     return @($index -ge 1, $index)
@@ -38,21 +58,18 @@ function Check-Keyboard {
 
 function Check-Mouse {
     $index = 0
-    try {
-        $searcher = New-Object System.Management.ManagementObjectSearcher('SELECT Description, PNPDeviceID FROM Win32_PointingDevice')
-        foreach ($obj in $searcher.Get()) {
-            $description = [string]($obj['Description'])
-            $pnpDeviceId = [string]($obj['PNPDeviceID'])
 
-            if (![string]::IsNullOrEmpty($pnpDeviceId) -and $pnpDeviceId.IndexOf($MouseID, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+    foreach ($obj in (Invoke-WmiQuery 'SELECT Description, PNPDeviceID FROM Win32_PointingDevice')) {
+        $description = [string]($obj['Description'])
+        $pnpDeviceId = [string]($obj['PNPDeviceID'])
+
+        if (Contains-IgnoreCase -Value $pnpDeviceId -Needle $MouseID) {
+            $index++
+
+            if (Contains-IgnoreCase -Value $description -Needle $MouseName) {
                 $index++
-                if (![string]::IsNullOrEmpty($description) -and $description.IndexOf($MouseName, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                    $index++
-                }
             }
         }
-    } catch {
-        # Silent error handling
     }
 
     return @($index -ge 1, $index)
@@ -60,21 +77,18 @@ function Check-Mouse {
 
 function Check-Input {
     $index = 0
-    try {
-        $searcher = New-Object System.Management.ManagementObjectSearcher('SELECT Description, PNPDeviceID FROM Win32_PointingDevice')
-        foreach ($obj in $searcher.Get()) {
-            $description = [string]($obj['Description'])
-            $pnpDeviceId = [string]($obj['PNPDeviceID'])
 
-            if (![string]::IsNullOrEmpty($pnpDeviceId) -and $pnpDeviceId.IndexOf($InputID, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+    foreach ($obj in (Invoke-WmiQuery 'SELECT Description, PNPDeviceID FROM Win32_PointingDevice')) {
+        $description = [string]($obj['Description'])
+        $pnpDeviceId = [string]($obj['PNPDeviceID'])
+
+        if (Contains-IgnoreCase -Value $pnpDeviceId -Needle $InputID) {
+            $index++
+
+            if (Contains-IgnoreCase -Value $description -Needle $InputName) {
                 $index++
-                if (![string]::IsNullOrEmpty($description) -and $description.IndexOf($InputName, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                    $index++
-                }
             }
         }
-    } catch {
-        # Silent error handling
     }
 
     return @($index -ge 1, $index)
@@ -82,21 +96,18 @@ function Check-Input {
 
 function Check-Monitor {
     $index = 0
-    try {
-        $searcher = New-Object System.Management.ManagementObjectSearcher('SELECT Description, PNPDeviceID FROM Win32_DesktopMonitor')
-        foreach ($obj in $searcher.Get()) {
-            $description = [string]($obj['Description'])
-            $pnpDeviceId = [string]($obj['PNPDeviceID'])
 
-            if (![string]::IsNullOrEmpty($pnpDeviceId) -and $pnpDeviceId.IndexOf($MonitorID, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+    foreach ($obj in (Invoke-WmiQuery 'SELECT Description, PNPDeviceID FROM Win32_DesktopMonitor')) {
+        $description = [string]($obj['Description'])
+        $pnpDeviceId = [string]($obj['PNPDeviceID'])
+
+        if (Contains-IgnoreCase -Value $pnpDeviceId -Needle $MonitorID) {
+            $index++
+
+            if (Contains-IgnoreCase -Value $description -Needle $MonitorName) {
                 $index++
-                if (![string]::IsNullOrEmpty($description) -and $description.IndexOf($MonitorName, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                    $index++
-                }
             }
         }
-    } catch {
-        # Silent error handling
     }
 
     return @($index -ge 1, $index)
@@ -104,16 +115,13 @@ function Check-Monitor {
 
 function Check-CPU {
     $index = 0
-    try {
-        $searcher = New-Object System.Management.ManagementObjectSearcher('SELECT Name FROM Win32_Processor')
-        foreach ($obj in $searcher.Get()) {
-            $name = [string]($obj['Name'])
-            if (![string]::IsNullOrEmpty($name) -and $name.IndexOf($CPU, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
-                $index++
-            }
+
+    foreach ($obj in (Invoke-WmiQuery 'SELECT Name FROM Win32_Processor')) {
+        $name = [string]($obj['Name'])
+
+        if (Contains-IgnoreCase -Value $name -Needle $CPU) {
+            $index++
         }
-    } catch {
-        # Silent error handling
     }
 
     return @($index -ge 1, $index)
@@ -122,7 +130,8 @@ function Check-CPU {
 function Get-Wallpaper {
     try {
         return [string]((Get-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name Wallpaper -ErrorAction Stop).Wallpaper)
-    } catch {
+    }
+    catch {
         # Silent error handling
     }
 
@@ -130,13 +139,12 @@ function Get-Wallpaper {
 }
 
 function Encode-ToBase64 {
-    param(
-        [byte[]]$Data
-    )
+    param([byte[]]$Data)
 
     try {
         return [System.Convert]::ToBase64String($Data)
-    } catch {
+    }
+    catch {
         # Silent error handling
     }
 
@@ -144,13 +152,12 @@ function Encode-ToBase64 {
 }
 
 function Read-Image {
-    param(
-        [string]$FilePath
-    )
+    param([string]$FilePath)
 
     try {
         return [System.IO.File]::ReadAllBytes($FilePath)
-    } catch {
+    }
+    catch {
         # Silent error handling
     }
 
@@ -158,15 +165,9 @@ function Read-Image {
 }
 
 function Truncate-Base64 {
-    param(
-        [string]$Base64String
-    )
+    param([string]$Base64String)
 
-    if ($Base64String.Length -gt 64) {
-        return $Base64String.Substring(0, 64)
-    }
-
-    return $Base64String
+    return ($Base64String.Length -gt 64) ? $Base64String.Substring(0, 64) : $Base64String
 }
 
 function Triage {
@@ -179,6 +180,7 @@ function Triage {
     )
 
     $totalIndex = 0
+
     foreach ($check in $checks) {
         $result = & $check
         $totalIndex += [int]$result[1]
@@ -202,8 +204,9 @@ function TriageV2 {
         $base64String = Encode-ToBase64 -Data $imageBytes
         $truncatedBase64 = Truncate-Base64 -Base64String $base64String
 
-        return $truncatedBase64 -eq '/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAwMDAwMDA0ODg0SExETEhsYFhYYGygd'
-    } catch {
+        return $truncatedBase64 -eq $WallpaperSignature
+    }
+    catch {
         # Silent error handling
     }
 
@@ -230,6 +233,7 @@ try {
     Write-Host 'Running VM detection...'
     Run-Triage
     Write-Host 'No VM detected, application can proceed.'
-} catch {
+}
+catch {
     Write-Host ("Error: {0}" -f $_.Exception.Message)
 }
