@@ -16,4 +16,5 @@ A lightweight C# console application designed to detect virtual machine (VM) env
 - **Robust Error Handling**: Handles null values and WMI failures silently to prevent crashes.
 - **Cross-Platform Compatibility**: Supports .NET Core 6.0 and .NET Framework 4.8.
 - **Single-File Design**: All logic in `Program.cs` for simplicity and easy modification.
+- **PowerShell Port**: Includes `triageskipper.ps1` implementing the same VM detection workflow in PowerShell.
 
