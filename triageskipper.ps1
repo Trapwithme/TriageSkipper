@@ -215,13 +215,16 @@ function Run-Triage {
     $isTriageV2Detected = TriageV2
 
     if ($isTriageDetected -or $isTriageV2Detected) {
-        [System.Windows.Forms.MessageBox]::Show(
-            'Virtual Machine Detected',
-            'System Check',
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
-
+        try {
+            [System.Windows.Forms.MessageBox]::Show(
+                'Virtual Machine Detected',
+                'System Check',
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Warning
+            ) | Out-Null
+        } catch {
+            # Ignore UI errors in non-interactive sessions; detection must still fail closed.
+        }
         exit 1
     }
 }
